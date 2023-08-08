@@ -119,7 +119,7 @@ def main(expt_name, use_gpu, model_folder, data_csv_path, data_formatter, use_te
                 model.cache_batched_data(train, "train", num_samples=train_samples)
                 model.cache_batched_data(valid, "valid", num_samples=valid_samples)
 
-            sess.run(tf.global_variables_initializer())
+            sess.run(tf.compat.v1.global_variables_initializer())
             model.fit()
 
             val_loss = model.evaluate()
