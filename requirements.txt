@@ -7,5 +7,5 @@ wget==3.2
 pyunpack==0.3
 patool==1.12
 protobuf==4.23.4
-tensorflow==2.13.0; platform_machine == 'x86_64'
-tensorflow-macos==2.13.0; platform_machine == 'arm64'
+tensorflow==2.13.0; platform_system != 'Darwin'
+tensorflow-macos==2.13.0; platform_system == 'Darwin'
