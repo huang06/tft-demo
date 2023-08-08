@@ -108,8 +108,8 @@ def main(expt_name, use_gpu, model_folder, data_csv_path, data_formatter, use_te
 
     best_loss = np.Inf
     for _ in range(num_repeats):
-        tf.reset_default_graph()
-        with tf.Graph().as_default(), tf.Session(config=tf_config) as sess:
+        tf.compat.v1.reset_default_graph()
+        with tf.Graph().as_default(), tf.compat.v1.Session(config=tf_config) as sess:
             tf.compat.v1.keras.backend.set_session(sess)
 
             params = opt_manager.get_next_parameters()
@@ -131,8 +131,8 @@ def main(expt_name, use_gpu, model_folder, data_csv_path, data_formatter, use_te
             tf.compat.v1.keras.backend.set_session(default_keras_session)
 
     print("*** Running tests ***")
-    tf.reset_default_graph()
-    with tf.Graph().as_default(), tf.Session(config=tf_config) as sess:
+    tf.compat.v1.reset_default_graph()
+    with tf.Graph().as_default(), tf.compat.v1.Session(config=tf_config) as sess:
         tf.compat.v1.keras.backend.set_session(sess)
         best_params = opt_manager.get_best_params()
         model = ModelClass(best_params, use_cudnn=use_gpu)
