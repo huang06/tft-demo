@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2023 The Google Research Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,18 +27,21 @@ Command line args:
 
 """
 
+from __future__ import annotations
+
 import argparse
 import datetime as dte
 import os
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
 
 import data_formatters.base
 import expt_settings.configs
 import libs.hyperparam_opt
 import libs.tft_model
 import libs.utils as utils
-import numpy as np
-import pandas as pd
-import tensorflow as tf
 
 ExperimentConfig = expt_settings.configs.ExperimentConfig
 HyperparamOptManager = libs.hyperparam_opt.HyperparamOptManager
@@ -47,12 +49,7 @@ ModelClass = libs.tft_model.TemporalFusionTransformer
 tf.compat.v1.experimental.output_all_intermediates(True)
 
 
-def main(expt_name,
-         use_gpu,
-         model_folder,
-         data_csv_path,
-         data_formatter,
-         use_testing_mode=False):
+def main(expt_name, use_gpu, model_folder, data_csv_path, data_formatter, use_testing_mode=False):
     """Trains tft based on defined model params.
 
     Args:
@@ -70,18 +67,18 @@ def main(expt_name,
 
     if not isinstance(data_formatter, data_formatters.base.GenericDataFormatter):
         raise ValueError(
-            "Data formatters should inherit from" +
-            "AbstractDataFormatter! Type={}".format(type(data_formatter)))
+            "Data formatters should inherit from" + f"AbstractDataFormatter! Type={type(data_formatter)}"
+        )
 
     # Tensorflow setup
     default_keras_session = tf.compat.v1.keras.backend.get_session()
 
     if use_gpu:
-       tf_config = utils.get_default_tensorflow_config(tf_device="gpu", gpu_id=0)
+        tf_config = utils.get_default_tensorflow_config(tf_device="gpu", gpu_id=0)
     else:
-       tf_config = utils.get_default_tensorflow_config(tf_device="cpu")
+        tf_config = utils.get_default_tensorflow_config(tf_device="cpu")
 
-    print("*** Training from defined parameters for {} ***".format(expt_name))
+    print(f"*** Training from defined parameters for {expt_name} ***")
 
     print("Loading & splitting data...")
     raw_data = pd.read_csv(data_csv_path, index_col=0)
@@ -101,21 +98,18 @@ def main(expt_name,
 
     # Sets up hyperparam manager
     print("*** Loading hyperparm manager ***")
-    opt_manager = HyperparamOptManager({k: [params[k]] for k in params},
-                                       fixed_params, model_folder)
+    opt_manager = HyperparamOptManager({k: [params[k]] for k in params}, fixed_params, model_folder)
 
     # Training -- one iteration only
     print("*** Running calibration ***")
     print("Params Selected:")
     for k in params:
-        print("{}: {}".format(k, params[k]))
+        print(f"{k}: {params[k]}")
 
     best_loss = np.Inf
     for _ in range(num_repeats):
-
         tf.reset_default_graph()
         with tf.Graph().as_default(), tf.Session(config=tf_config) as sess:
-
             tf.compat.v1.keras.backend.set_session(sess)
 
             params = opt_manager.get_next_parameters()
@@ -156,32 +150,29 @@ def main(expt_name,
 
         def extract_numerical_data(data):
             """Strips out forecast time and identifier columns."""
-            return data[[
-                col for col in data.columns
-                if col not in {"forecast_time", "identifier"}
-            ]]
+            return data[[col for col in data.columns if col not in {"forecast_time", "identifier"}]]
 
         p50_loss = utils.numpy_normalised_quantile_loss(
-            extract_numerical_data(targets), extract_numerical_data(p50_forecast),
-            0.5)
+            extract_numerical_data(targets), extract_numerical_data(p50_forecast), 0.5
+        )
         p90_loss = utils.numpy_normalised_quantile_loss(
-            extract_numerical_data(targets), extract_numerical_data(p90_forecast),
-            0.9)
+            extract_numerical_data(targets), extract_numerical_data(p90_forecast), 0.9
+        )
 
         tf.compat.v1.keras.backend.set_session(default_keras_session)
 
-    print("Training completed @ {}".format(dte.datetime.now()))
-    print("Best validation loss = {}".format(val_loss))
+    print(f"Training completed @ {dte.datetime.now()}")
+    print(f"Best validation loss = {val_loss}")
     print("Params:")
 
     for k in best_params:
         print(k, " = ", best_params[k])
     print()
-    print("Normalised Quantile Loss for Test Data: P50={}, P90={}".format(
-        p50_loss.mean(), p90_loss.mean()))
+    print(f"Normalised Quantile Loss for Test Data: P50={p50_loss.mean()}, P90={p90_loss.mean()}")
 
 
 if __name__ == "__main__":
+
     def get_args():
         """Gets settings from command line."""
 
@@ -195,14 +186,16 @@ if __name__ == "__main__":
             nargs="?",
             default="volatility",
             choices=experiment_names,
-            help="Experiment Name. Default={}".format(",".join(experiment_names)))
+            help="Experiment Name. Default={}".format(",".join(experiment_names)),
+        )
         parser.add_argument(
             "output_folder",
             metavar="f",
             type=str,
             nargs="?",
             default=".",
-            help="Path to folder for data download")
+            help="Path to folder for data download",
+        )
         parser.add_argument(
             "use_gpu",
             metavar="g",
@@ -210,7 +203,8 @@ if __name__ == "__main__":
             nargs="?",
             choices=["yes", "no"],
             default="no",
-            help="Whether to use gpu for training.")
+            help="Whether to use gpu for training.",
+        )
 
         args = parser.parse_known_args()[0]
 
@@ -218,10 +212,9 @@ if __name__ == "__main__":
 
         return args.expt_name, root_folder, args.use_gpu == "yes"
 
-
     name, output_folder, use_tensorflow_with_gpu = get_args()
 
-    print("Using output folder {}".format(output_folder))
+    print(f"Using output folder {output_folder}")
 
     config = ExperimentConfig(name, output_folder)
     formatter = config.make_data_formatter()
@@ -233,4 +226,5 @@ if __name__ == "__main__":
         model_folder=os.path.join(config.model_folder, "fixed"),
         data_csv_path=config.data_csv_path,
         data_formatter=formatter,
-        use_testing_mode=True)  # Change to false to use original default params
+        use_testing_mode=True,
+    )  # Change to false to use original default params

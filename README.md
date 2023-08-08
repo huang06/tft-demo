@@ -37,7 +37,7 @@ where ``$EXPT`` can be any of {``volatility``, ``electricity``, ``traffic``, ``f
 ### Step 2: Train and evaluate network
 To train the network with the optimal default parameters, run:
 ```bash
-python3 -m script_train_fixed_params $EXPT $OUTPUT_FOLDER $USE_GPU 
+python3 -m script_train_fixed_params $EXPT $OUTPUT_FOLDER $USE_GPU
 ```
 where ``$EXPT`` and ``$OUTPUT_FOLDER`` are as above, ``$GPU`` denotes whether to run with GPU support (options are {``'yes'`` or``'no'``}).
 
@@ -98,9 +98,9 @@ As an optional step, change the number of random search iterations if required:
 ```python
 @property
   def hyperparam_iterations(self):
-    
+
     my_search_iterations=1000
-    
+
     if self.experiment == 'example':
       return my_search_iterations
     else:
