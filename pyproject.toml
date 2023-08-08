@@ -18,5 +18,5 @@ profile = "black"
 add_imports = "from __future__ import annotations"
 
 [tool.pydocstyle]
-convention = "numpy"
+convention = "google"
 add-ignore = "D100,D101,D102,D103,D104,D107,D203,D213"
