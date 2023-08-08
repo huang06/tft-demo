@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+tensorflow-probability = "*"
+wget = "*"
+pyunpack = "*"
+patool = "*"
+protobuf = "==3.20.3"
+tensorflow = "==1.15.5"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"
