@@ -370,6 +370,7 @@ def download_traffic(config):
 
     raise ValueError('Invalid value of x {}'.format(x))
 
+  sliced_list = []
   for store in store_columns:
     print('Processing {}'.format(store))
 
@@ -387,7 +388,8 @@ def download_traffic(config):
     sliced['prev_values'] = sliced['values'].shift(1)
     sliced['next_values'] = sliced['values'].shift(-1)
 
-    flat_df = flat_df.append(sliced.dropna(), ignore_index=True, sort=False)
+    sliced_list.append(sliced.dropna())
+  flat_df = pd.concat(sliced_list, ignore_index=True, sort=False)
 
   # Filter to match range used by other academic papers
   index = flat_df['sensor_day']
