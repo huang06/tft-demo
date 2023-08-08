@@ -96,10 +96,10 @@ class HyperparamOptManager:
       self.saved_params = pd.read_csv(params_file, index_col=0)
 
       if not self.results.empty:
-        self.results.at["loss"] = self.results.loc["loss"].apply(float)
-        self.best_score = self.results.loc["loss"].min()
+        self.results["loss"] = self.results["loss"].map(float)
+        self.best_score = self.results["loss"].min()
 
-        is_optimal = self.results.loc["loss"] == self.best_score
+        is_optimal = self.results["loss"] == self.best_score
         self.optimal_name = self.results.T[is_optimal].index[0]
 
         return True

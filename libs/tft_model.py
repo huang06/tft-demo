@@ -231,8 +231,8 @@ def get_decoder_mask(self_attn_inputs):
   Args:
     self_attn_inputs: Inputs to self attention layer to determine mask shape
   """
-  len_s = tf.shape(self_attn_inputs)[1]
-  bs = tf.shape(self_attn_inputs)[:1]
+  len_s = tf.shape(input=self_attn_inputs)[1]
+  bs = tf.shape(input=self_attn_inputs)[:1]
   mask = K.cumsum(tf.eye(len_s, batch_shape=bs), 1)
   return mask
 
@@ -262,7 +262,7 @@ class ScaledDotProductAttention():
     Returns:
       Tuple of (layer outputs, attention weights)
     """
-    temper = tf.sqrt(tf.cast(tf.shape(k)[-1], dtype='float32'))
+    temper = tf.sqrt(tf.cast(tf.shape(input=k)[-1], dtype='float32'))
     attn = Lambda(lambda x: K.batch_dot(x[0], x[1], axes=[2, 2]) / temper)(
         [q, k])  # shape=(batch, q, k)
     if mask is not None:
@@ -938,7 +938,7 @@ class TemporalFusionTransformer(object):
     def get_lstm(return_state):
       """Returns LSTM cell initialized with default parameters."""
       if self.use_cudnn:
-        lstm = tf.keras.layers.CuDNNLSTM(
+        lstm = tf.compat.v1.keras.layers.CuDNNLSTM(
             self.hidden_layer_size,
             return_sequences=True,
             return_state=return_state,
@@ -1035,7 +1035,7 @@ class TemporalFusionTransformer(object):
       Fully defined Keras model.
     """
 
-    with tf.variable_scope(self.name):
+    with tf.compat.v1.variable_scope(self.name):
 
       transformer_layer, all_inputs, attention_components \
           = self._build_base_graph()
@@ -1046,8 +1046,8 @@ class TemporalFusionTransformer(object):
 
       self._attention_components = attention_components
 
-      adam = tf.keras.optimizers.Adam(
-          lr=self.learning_rate, clipnorm=self.max_gradient_norm)
+      adam = tf.compat.v1.keras.optimizers.Adam(
+          learning_rate=self.learning_rate, clipnorm=self.max_gradient_norm)
 
       model = tf.keras.Model(inputs=all_inputs, outputs=outputs)
 
@@ -1281,7 +1281,7 @@ class TemporalFusionTransformer(object):
       input_placeholder = self._input_placeholder
       attention_weights = {}
       for k in self._attention_components:
-        attention_weight = tf.keras.backend.get_session().run(
+        attention_weight = tf.compat.v1.keras.backend.get_session().run(
             self._attention_components[k],
             {input_placeholder: input_batch.astype(np.float32)})
         attention_weights[k] = attention_weight
@@ -1347,7 +1347,7 @@ class TemporalFusionTransformer(object):
     # when model is reloaded (https://github.com/keras-team/keras/issues/4875).
 
     utils.save(
-        tf.keras.backend.get_session(),
+        tf.compat.v1.keras.backend.get_session(),
         model_folder,
         cp_name=self.name,
         scope=self.name)
@@ -1370,7 +1370,7 @@ class TemporalFusionTransformer(object):
     else:
       # Loads tensorflow graph for optimal models.
       utils.load(
-          tf.keras.backend.get_session(),
+          tf.compat.v1.keras.backend.get_session(),
           model_folder,
           cp_name=self.name,
           scope=self.name)
